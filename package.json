@@ -1,0 +1,22 @@
+{
+  "name": "whisper-web",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "format": "prettier --write ."
+  },
+  "dependencies": {
+    "react": "^18",
+    "react-dom": "^18"
+  },
+  "devDependencies": {
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "@vitejs/plugin-react": "^2",
+    "prettier": "^2",
+    "typescript": "^4",
+    "vite": "^3"
+  }
+}

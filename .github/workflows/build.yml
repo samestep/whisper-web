@@ -4,7 +4,7 @@ on:
     branches:
       - main
 jobs:
-  build:
+  docker:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
@@ -17,3 +17,10 @@ jobs:
             --cache-from ghcr.io/samestep/whisper-web:latest \
             --tag ghcr.io/samestep/whisper-web:latest
       - run: docker push ghcr.io/samestep/whisper-web:latest
+
+  format:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - run: yarn
+      - run: yarn format

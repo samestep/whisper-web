@@ -6,3 +6,11 @@ Interaction](https://sites.google.com/andrew.cmu.edu/haii-cmu) class in Fall
 model. Originally this was meant to be something much cooler (specifically, the
 entirety of Whisper packaged into WebAssembly), but that turned out to be too
 hard for me to do, so here we are.
+
+## Contributing
+
+See [`CONTRIBUTING.md`](CONTRIBUTING.md).
+
+## License
+
+This repository is licensed under the [MIT License](LICENSE).
