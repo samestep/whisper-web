@@ -1,0 +1,19 @@
+name: Build
+on:
+  push:
+    branches:
+      - main
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" \
+            | docker login ghcr.io -u $ --password-stdin
+      # - run: docker pull ghcr.io/samestep/whisper-web:latest
+      - run: |
+          docker build . --pull \
+            # --cache-from ghcr.io/samestep/whisper-web:latest \
+            --tag ghcr.io/samestep/whisper-web:latest
+      - run: docker push ghcr.io/samestep/whisper-web:latest
