@@ -13,6 +13,6 @@ jobs:
             | docker login ghcr.io -u $ --password-stdin
       # - run: docker pull ghcr.io/samestep/whisper-web:latest
       - run: |
-          docker build . --pull \ # --cache-from ghcr.io/samestep/whisper-web:latest \
+          docker build . --pull \
             --tag ghcr.io/samestep/whisper-web:latest
       - run: docker push ghcr.io/samestep/whisper-web:latest
