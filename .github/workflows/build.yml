@@ -5,9 +5,9 @@ on:
       - main
 jobs:
   docker:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - run: |
           echo "${{ secrets.GITHUB_TOKEN }}" \
             | docker login ghcr.io -u $ --password-stdin
@@ -19,8 +19,19 @@ jobs:
       - run: docker push ghcr.io/samestep/whisper-web:latest
 
   format:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - run: yarn
       - run: npx prettier --check .
+
+  pages:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+      - run: yarn
+      - run: yarn build
+      - uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
