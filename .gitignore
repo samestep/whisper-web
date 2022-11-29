@@ -1,3 +1,6 @@
 __pycache__/
+*.part
+*.webm
 /dist/
 /node_modules/
+/requirements.txt

@@ -4,4 +4,3 @@ isort . --check --diff
 black .
 flake8
 mypy .
-pytest
