@@ -8,15 +8,13 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v3
-      - run: |
-          echo "${{ secrets.GITHUB_TOKEN }}" \
-            | docker login ghcr.io -u $ --password-stdin
-      - run: docker pull ghcr.io/samestep/whisper-web:latest
-      - run: |
-          docker build . --pull \
-            --cache-from ghcr.io/samestep/whisper-web:latest \
-            --tag ghcr.io/samestep/whisper-web:latest
-      - run: docker push ghcr.io/samestep/whisper-web:latest
+      - run: docker build --tag=whisper:latest .
+      - uses: jwalton/gh-ecr-push@v1
+        with:
+          access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          region: us-east-2
+          image: whisper:latest
 
   format:
     runs-on: ubuntu-22.04
