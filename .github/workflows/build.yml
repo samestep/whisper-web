@@ -3,11 +3,26 @@ on:
   push:
     branches:
       - main
+
 jobs:
-  docker:
+  client:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v3
+      - run: yarn
+      - run: npx prettier --check .
+      - run: yarn build
+      - uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
+
+  server:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+      - run: poetry install
+      - run: poetry run ./check.sh
       - run: docker build --tag=whisper:latest .
       - uses: jwalton/gh-ecr-push@v1
         with:
@@ -15,21 +30,3 @@ jobs:
           secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           region: us-east-2
           image: whisper:latest
-
-  format:
-    runs-on: ubuntu-22.04
-    steps:
-      - uses: actions/checkout@v3
-      - run: yarn
-      - run: npx prettier --check .
-
-  pages:
-    runs-on: ubuntu-22.04
-    steps:
-      - uses: actions/checkout@v3
-      - run: yarn
-      - run: yarn build
-      - uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./dist

@@ -1,0 +1,25 @@
+[tool.poetry]
+authors = []
+description = ""
+name = "whisper-web"
+version = "0.0.0"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+
+[tool.poetry.dev-dependencies]
+black = "^22"
+flake8 = "^6"
+isort = "^5"
+mypy = "^0.991"
+
+[build-system]
+build-backend = "poetry.core.masonry.api"
+requires = ["poetry-core"]
+
+# https://black.readthedocs.io/en/stable/guides/using_black_with_other_tools.html#isort
+[tool.isort]
+profile = "black"
+
+[tool.mypy]
+strict = true
