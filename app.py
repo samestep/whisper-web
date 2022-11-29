@@ -1,4 +1,4 @@
-from typing import Any, TypedDict
+from typing import Any, TypedDict, Union
 
 
 class Event(TypedDict, total=False):
@@ -17,7 +17,7 @@ class ResultResponse(TypedDict):
     result: Any
 
 
-Response = ResultResponse | ErrorResponse
+Response = Union[ResultResponse, ErrorResponse]
 
 
 def params_error() -> ErrorResponse:
