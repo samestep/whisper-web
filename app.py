@@ -48,11 +48,8 @@ def handler(event: Event, context: Any = None) -> Response:
 
     try:
         prior_body = obj.get()["Body"]
-    except ClientError as e:
-        if e.response["Error"]["Code"] == "NoSuchKey":
-            prior_body = None
-        else:
-            return {"error": {"message": str(e)}}
+    except ClientError:
+        prior_body = None
 
     if prior_body is not None:
         prior = json.loads(prior_body.read())
