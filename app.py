@@ -4,6 +4,7 @@ import tempfile
 from typing import Any, TypedDict, Union
 
 import boto3
+import whisper
 import youtube_dl
 
 
@@ -112,4 +113,7 @@ def handler(event: Event, context: Context) -> Response:
         ) as ydl:
             ydl.download([id])
 
-    return {"result": {"status": "finished"}}
+        model = whisper.load_model("tiny.en", download_root=".cache/whisper")
+        result = model.transcribe(filename)
+
+    return {"result": result}

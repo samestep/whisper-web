@@ -27,8 +27,7 @@ jobs:
       - uses: snok/install-poetry@v1
       - run: poetry install
       - run: poetry run ./check.sh
-      - run: poetry export --output=requirements.txt
-      - run: docker build --tag=whisper:latest .
+      - run: ./build.sh
       - uses: jwalton/gh-ecr-push@v1
         with:
           access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}

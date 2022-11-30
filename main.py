@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
+import json
 import uuid
 
 import app
@@ -14,7 +15,7 @@ def main() -> None:
 
     context = app.Context()
     context.aws_request_id = str(uuid.uuid4())
-    print(app.handler({"queryStringParameters": vars(args)}, context))
+    print(json.dumps(app.handler({"queryStringParameters": vars(args)}, context)))
 
 
 if __name__ == "__main__":
