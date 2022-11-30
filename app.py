@@ -104,7 +104,7 @@ def handler(event: Event, context: Context) -> Response:
     with tempfile.TemporaryDirectory() as tmpdirname:
         with youtube_dl.YoutubeDL(
             {
-                "cachedir": "/var/task/.cache/youtube-dl",
+                "cachedir": f"{tmpdirname}/.cache/youtube-dl",
                 "format": "worstaudio",
                 "outtmpl": f"{tmpdirname}/%(id)s.%(ext)s",
                 "progress_hooks": [progress_hook],
