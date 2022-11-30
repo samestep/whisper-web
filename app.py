@@ -1,14 +1,17 @@
 import json
-from datetime import datetime, timedelta
+import re
 from typing import Any, TypedDict, Union
 
 import boto3
 import youtube_dl
-from botocore.exceptions import ClientError
 
 
 class Event(TypedDict, total=False):
     queryStringParameters: dict[str, str]
+
+
+class Context:
+    aws_request_id: str
 
 
 class Error(TypedDict):
@@ -30,73 +33,81 @@ class ResultResponse(TypedDict):
 Response = Union[ResultResponse, ErrorResponse]
 
 
-def params_error() -> ErrorResponse:
-    return {"error": {"message": "missing 'youtube' query string parameter"}}
-
-
-def handler(event: Event, context: Any = None) -> Response:
+def handler(event: Event, context: Context) -> Response:
     params = event.get("queryStringParameters")
+    absent = {"session", "youtube"}
+
+    def params_error() -> ErrorResponse:
+        return {
+            "error": {
+                "message": f"missing query string parameter(s): {', '.join(absent)}"
+            }
+        }
+
     if params is None:
         return params_error()
     id = params.get("youtube")
-    if id is None:
+    if id is not None:
+        absent.remove("youtube")
+    session = params.get("session")
+    if session is not None:
+        absent.remove("session")
+    if absent:
         return params_error()
+    assert id is not None and session is not None
+
+    youtube_regex = r"^[\-0-9A-Z_a-z]{11}$"
+    if not re.match(youtube_regex, id):
+        return {
+            "error": {"message": f"YouTube ID must match this regex: {youtube_regex}"}
+        }
+
+    session_regex = r"^[0-9a-f]{16}$"
+    if not re.match(session_regex, session):
+        return {
+            "error": {"message": f"session ID must match this regex: {session_regex}"}
+        }
 
     s3 = boto3.resource("s3")
-    object_key = f"youtube/{id}/status.json"
+    object_key = f"youtube/{id}/{session}/status.json"
     obj = s3.Object("whisper-web", object_key)
 
-    try:
-        prior_body = obj.get()["Body"]
-    except ClientError:
-        prior_body = None
-
-    if prior_body is not None:
-        prior = json.loads(prior_body.read())
-        diff = datetime.utcnow() - datetime.fromisoformat(prior["utc"])
-        if prior["status"] == "finished" and diff < timedelta(
-            hours=12  # the S3 bucket expires objects after 1 day
-        ):
-            return {"result": {"status": "finished"}}
-        elif prior["status"] != "error" and diff < timedelta(
-            minutes=20  # AWS Lambda has a 15 minute timeout
-        ):
-            return {"result": {"status": "pending"}}
-
     def put(status: dict[str, Any]) -> None:
-        obj.put(Body=json.dumps(status | {"utc": datetime.utcnow().isoformat()}))
+        obj.put(Body=json.dumps(status | {"awsRequestId": context.aws_request_id}))
 
-    def err(msg: str) -> ErrorResponse:
-        put({"status": "error"})
-        return {"error": {"message": msg}}
+    elapsed = 0
+    filename = None
 
-    try:
-        elapsed = 0
-        filename = None
+    def put_downloading(info: dict[str, Any]) -> None:
+        put({"status": "downloading", "progress": info | {"elapsed": elapsed}})
 
-        def put_downloading() -> None:
-            put({"status": "downloading", "elapsed": elapsed})
+    put_downloading({})
 
-        def progress_hook(progress: dict[str, Any]) -> None:
-            nonlocal elapsed
-            nonlocal filename
-            filename = progress["filename"]
-            new_elapsed = progress.get("elapsed")
-            if new_elapsed is not None and new_elapsed - elapsed > 1:
-                elapsed = new_elapsed
-                put_downloading()
+    def progress_hook(progress: dict[str, Any]) -> None:
+        nonlocal elapsed
+        nonlocal filename
+        filename = progress["filename"]
+        new_elapsed = progress.get("elapsed")
+        if new_elapsed is not None and new_elapsed - elapsed > 0.5:  # seconds
+            elapsed = new_elapsed
+            put_downloading(
+                {
+                    "downloadedBytes": progress.get("downloaded_bytes"),
+                    "totalBytes": progress.get("total_bytes"),
+                    "totalBytesEstimate": progress.get("total_bytes_estimate"),
+                    "secondsRemaining": progress.get("eta"),
+                    "bytesPerSecond": progress.get("speed"),
+                }
+            )
 
-        with youtube_dl.YoutubeDL(
-            {
-                "format": "worstaudio",
-                "outtmpl": "%(id)s.%(ext)s",
-                "progress_hooks": [progress_hook],
-            }
-        ) as ydl:
-            ydl.download([id])
+    with youtube_dl.YoutubeDL(
+        {
+            "cachedir": "/var/task/.cache/youtube-dl",
+            "format": "worstaudio",
+            "outtmpl": "%(id)s.%(ext)s",
+            "progress_hooks": [progress_hook],
+        }
+    ) as ydl:
+        ydl.download([id])
 
-        put({"status": "finished"})
-
-        return {"result": {"status": "finished"}}
-    except Exception as e:
-        return err(str(e))
+    return {"result": {"status": "finished"}}

@@ -32,8 +32,4 @@ module = "boto3"
 
 [[tool.mypy.overrides]]
 ignore_missing_imports = true
-module = "botocore.*"
-
-[[tool.mypy.overrides]]
-ignore_missing_imports = true
 module = "youtube_dl"
