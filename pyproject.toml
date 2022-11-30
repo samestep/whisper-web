@@ -39,4 +39,8 @@ module = "boto3"
 
 [[tool.mypy.overrides]]
 ignore_missing_imports = true
+module = "whisper"
+
+[[tool.mypy.overrides]]
+ignore_missing_imports = true
 module = "youtube_dl"
