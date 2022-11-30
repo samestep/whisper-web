@@ -12,4 +12,7 @@ ADD https://openaipublic.azureedge.net/main/whisper/models/d3dd57d32accea0b295c9
 
 COPY app.py .
 
+# prevent transformers from writing to read-only parts of the Lambda filesystem
+ENV XDG_CACHE_HOME=/tmp/.cache
+
 CMD ["app.handler"]
