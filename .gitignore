@@ -1,6 +1,5 @@
 __pycache__/
 .DS_Store
-/.cache/
 /dist/
 /ffmpeg-*.tar.xz
 /node_modules/
