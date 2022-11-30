@@ -1,5 +1,6 @@
 import json
 import re
+import tempfile
 from typing import Any, TypedDict, Union
 
 import boto3
@@ -100,14 +101,15 @@ def handler(event: Event, context: Context) -> Response:
                 }
             )
 
-    with youtube_dl.YoutubeDL(
-        {
-            "cachedir": "/var/task/.cache/youtube-dl",
-            "format": "worstaudio",
-            "outtmpl": "%(id)s.%(ext)s",
-            "progress_hooks": [progress_hook],
-        }
-    ) as ydl:
-        ydl.download([id])
+    with tempfile.TemporaryDirectory() as tmpdirname:
+        with youtube_dl.YoutubeDL(
+            {
+                "cachedir": "/var/task/.cache/youtube-dl",
+                "format": "worstaudio",
+                "outtmpl": f"{tmpdirname}/%(id)s.%(ext)s",
+                "progress_hooks": [progress_hook],
+            }
+        ) as ydl:
+            ydl.download([id])
 
     return {"result": {"status": "finished"}}
