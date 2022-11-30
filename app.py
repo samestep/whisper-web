@@ -113,7 +113,7 @@ def handler(event: Event, context: Context) -> Response:
         ) as ydl:
             ydl.download([id])
 
-        model = whisper.load_model("tiny.en", download_root="/tmp/.cache/whisper")
+        model = whisper.load_model("small", download_root="/tmp/.cache/whisper")
         result = model.transcribe(filename)
 
     return {"result": result}

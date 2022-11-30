@@ -8,7 +8,8 @@ RUN pip install -r requirements.txt --target .
 ADD ffmpeg-5.1.1-amd64-static.tar.xz .
 RUN mkdir /opt/bin && cp ffmpeg-5.1.1-amd64-static/ffmpeg /opt/bin/ffmpeg
 
-ADD https://openaipublic.azureedge.net/main/whisper/models/d3dd57d32accea0b295c96e26691aa14d8822fac7d9d27d5dc00b4ca2826dd03/tiny.en.pt /tmp/.cache/whisper/tiny.en.pt
+# https://github.com/openai/whisper/blob/eff383b27b783e280c089475852ba83f20f64998/whisper/__init__.py#L23
+ADD https://openaipublic.azureedge.net/main/whisper/models/9ecf779972d90ba49c06d968637d720dd632c55bbf19d441fb42bf17a411e794/small.pt /tmp/.cache/whisper/small.pt
 
 COPY app.py .
 
