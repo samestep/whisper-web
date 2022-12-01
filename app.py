@@ -1,6 +1,9 @@
+import contextlib
 import json
 import re
+import sys
 import tempfile
+import time
 from typing import Any, TypedDict, Union
 
 import boto3
@@ -102,6 +105,28 @@ def handler(event: Event, context: Context) -> Response:
                 }
             )
 
+    segments: list[str] = []
+    last_put = time.monotonic()
+    chunks = 0
+
+    class Interceptor:
+        def write(self, s: Any) -> Any:
+            nonlocal segments
+            nonlocal last_put
+            nonlocal chunks
+            sys.__stdout__.write(s)
+            if s.startswith("["):
+                segments.append(s)
+                now = time.monotonic()
+                if now - last_put > 0.5:  # seconds
+                    s3.Object(
+                        "whisper-web", f"youtube/{id}/{session}/{chunks}.json"
+                    ).put(Body=json.dumps(segments))
+                    segments = []
+                    last_put = now
+                    chunks += 1
+                    put({"status": "transcribing", "chunks": chunks})
+
     with tempfile.TemporaryDirectory() as tmpdirname:
         with youtube_dl.YoutubeDL(
             {
@@ -114,6 +139,11 @@ def handler(event: Event, context: Context) -> Response:
             ydl.download([id])
 
         model = whisper.load_model("small", download_root="/tmp/.cache/whisper")
-        result = model.transcribe(filename)
+
+        interceptor: Any = Interceptor()
+        with contextlib.redirect_stdout(interceptor):
+            result = model.transcribe(filename, verbose=True)
+
+    put({"status": "finished", "chunks": chunks})
 
     return {"result": result}
