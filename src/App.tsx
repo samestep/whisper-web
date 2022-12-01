@@ -1,35 +1,112 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./App.css";
-import reactLogo from "./assets/react.svg";
-import viteLogo from "./assets/vite.svg";
 
-function App() {
-  const [count, setCount] = useState(0);
+const title = "Whisper Web";
+const github = "https://github.com/samestep/whisper-web";
+
+const Session = (props: { session: string; youtube: string }) => {
+  const url = `https://youtu.be/${props.youtube}`;
+  return (
+    <>
+      <p>
+        <a href={url}>{url}</a>
+      </p>
+      <p>transcribing...</p>
+    </>
+  );
+};
+
+const Invalid = (props: { name: string; value: string | null }) => (
+  <p className="invalid">
+    invalid {props.name}: {JSON.stringify(props.value)}
+  </p>
+);
+
+const InvalidSession = (props: { value: string | null }) => (
+  <Invalid name="session" value={props.value} />
+);
+
+const InvalidYoutube = (props: { value: string | null }) => (
+  <Invalid name="YouTube ID" value={props.value} />
+);
+
+const isSessionValid = (session: string | null) =>
+  session?.match(/[0-9a-f]{16}/);
+const isYoutubeValid = (session: string | null) =>
+  session?.match(/[\-0-9A-Z_a-z]{11}/);
+
+const Homepage = (props: { transcribe: (youtube: string) => void }) => {
+  const [attempt, setAttempt] = useState<string | undefined>(undefined);
+  return (
+    <>
+      <p>Enter a YouTube video ID:</p>
+      <div>
+        <input id="textbox"></input>
+      </div>
+      <div>
+        <button
+          onClick={() => {
+            const youtube = (
+              document.getElementById("textbox") as HTMLInputElement
+            ).value;
+            if (!isYoutubeValid(youtube)) setAttempt(youtube);
+            else props.transcribe(youtube);
+          }}
+        >
+          transcribe
+        </button>
+      </div>
+      {attempt !== undefined ? <InvalidYoutube value={attempt} /> : <></>}
+    </>
+  );
+};
+
+const App = () => {
+  const params = new URL(window.location.href).searchParams;
+  const [session, setSession] = useState(params.get("session"));
+  const [youtube, setYoutube] = useState(params.get("youtube"));
+
+  useEffect(() => {
+    document.title = youtube === null ? title : `${title}: ${youtube}`;
+  });
 
   return (
-    <div className="App">
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://reactjs.org" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
+    <>
+      <h1>
+        <a href="/">{title}</a>
+      </h1>
+      <p>
+        <a href={github}>{github}</a>
       </p>
-    </div>
+      {session === null && youtube === null ? (
+        <Homepage
+          transcribe={(newYoutube) => {
+            const chars = [];
+            const radix = 16;
+            for (let i = 0; i < 16; ++i)
+              chars.push(Math.floor(Math.random() * radix).toString(radix));
+            const newSession = chars.join("");
+
+            const url = new URL(window.location.href);
+            url.searchParams.set("session", newSession);
+            url.searchParams.set("youtube", newYoutube);
+
+            window.history.pushState(null, "", url.href);
+
+            setSession(newSession);
+            setYoutube(newYoutube);
+          }}
+        />
+      ) : isSessionValid(session) && isYoutubeValid(youtube) ? (
+        <Session session={session!} youtube={youtube!} />
+      ) : (
+        <>
+          {isSessionValid(session) ? <></> : <InvalidSession value={session} />}
+          {isYoutubeValid(youtube) ? <></> : <InvalidYoutube value={youtube} />}
+        </>
+      )}
+    </>
   );
-}
+};
 
 export default App;
