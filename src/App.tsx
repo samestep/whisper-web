@@ -4,14 +4,58 @@ import "./App.css";
 const title = "Whisper Web";
 const github = "https://github.com/samestep/whisper-web";
 
+interface Starting {
+  status: "starting";
+}
+
+interface Progress {
+  downloadedBytes: number;
+  totalBytes: number | null;
+  totalBytesEstimate: number | null;
+  elapsed: number;
+  secondsRemaining: number | null;
+  bytesPerSecond: number | null;
+}
+
+interface Downloading {
+  status: "downloading";
+  progress: Progress;
+}
+
+interface Transcribing {
+  status: "transcribing" | "finished";
+  chunks: number;
+}
+
+interface Meta {
+  awsRequestId: string;
+}
+
+type Status = Starting | (Meta & (Downloading | Transcribing));
+
 const Session = (props: { session: string; youtube: string }) => {
+  const [status, setStatus] = useState<Status>({ status: "starting" });
+
+  useEffect(() => {
+    if (status.status === "finished") return;
+    const interval = setInterval(async () => {
+      const response = await fetch(
+        `https://whisper-web.s3.us-east-2.amazonaws.com/youtube/${props.youtube}/${props.session}/status.json`
+      );
+      if (response.ok) setStatus(await response.json());
+    }, 1000); // milliseconds
+    return () => {
+      clearInterval(interval);
+    };
+  }, [props.session, props.youtube, status.status === "finished"]);
+
   const url = `https://youtu.be/${props.youtube}`;
   return (
     <>
       <p>
         <a href={url}>{url}</a>
       </p>
-      <p>transcribing...</p>
+      <p>{JSON.stringify(status)}</p>
     </>
   );
 };
@@ -87,11 +131,24 @@ const App = () => {
               chars.push(Math.floor(Math.random() * radix).toString(radix));
             const newSession = chars.join("");
 
-            const url = new URL(window.location.href);
-            url.searchParams.set("session", newSession);
-            url.searchParams.set("youtube", newYoutube);
+            const withParams = (s: string) => {
+              const url = new URL(s);
+              url.searchParams.set("session", newSession);
+              url.searchParams.set("youtube", newYoutube);
+              return url;
+            };
 
-            window.history.pushState(null, "", url.href);
+            window.history.pushState(
+              null,
+              "",
+              withParams(window.location.href).href
+            );
+
+            fetch(
+              withParams(
+                "https://okqcvtykhqywnehiwtwnbnh43i0xjvmi.lambda-url.us-east-2.on.aws/"
+              )
+            );
 
             setSession(newSession);
             setYoutube(newYoutube);
