@@ -73,8 +73,10 @@ def handler(event: Event, context: Context) -> Response:
             "error": {"message": f"session ID must match this regex: {session_regex}"}
         }
 
+    prefix = f"youtube/{id}/{session}/"
+
     s3 = boto3.resource("s3")
-    object_key = f"youtube/{id}/{session}/status.json"
+    object_key = f"{prefix}status.json"
     obj = s3.Object("whisper-web", object_key)
 
     def put(status: dict[str, Any]) -> None:
@@ -119,9 +121,9 @@ def handler(event: Event, context: Context) -> Response:
                 segments.append(s)
                 now = time.monotonic()
                 if now - last_put > 0.5:  # seconds
-                    s3.Object(
-                        "whisper-web", f"youtube/{id}/{session}/{chunks}.json"
-                    ).put(Body=json.dumps(segments))
+                    s3.Object("whisper-web", f"{prefix}{chunks}.json").put(
+                        Body=json.dumps(segments)
+                    )
                     segments = []
                     last_put = now
                     chunks += 1
