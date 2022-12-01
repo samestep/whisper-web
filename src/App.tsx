@@ -33,8 +33,14 @@ interface Meta {
 
 type Status = Starting | (Meta & (Downloading | Transcribing));
 
+const numChunks = (status: Status) =>
+  status.status === "transcribing" || status.status === "finished"
+    ? status.chunks
+    : 0;
+
 const Session = (props: { session: string; youtube: string }) => {
   const [status, setStatus] = useState<Status>({ status: "starting" });
+  const [chunks, setChunks] = useState<string[][]>([]);
 
   useEffect(() => {
     if (status.status === "finished") return;
@@ -42,7 +48,25 @@ const Session = (props: { session: string; youtube: string }) => {
       const response = await fetch(
         `https://whisper-web.s3.us-east-2.amazonaws.com/youtube/${props.youtube}/${props.session}/status.json`
       );
-      if (response.ok) setStatus(await response.json());
+      if (!response.ok) return;
+      const newStatus = await response.json();
+      setStatus((status) => {
+        if (numChunks(newStatus) > 0) {
+          for (let i = numChunks(status); i < newStatus.chunks; ++i) {
+            fetch(
+              `https://whisper-web.s3.us-east-2.amazonaws.com/youtube/${props.youtube}/${props.session}/${i}.json`
+            ).then(async (response) => {
+              const chunk = await response.json();
+              setChunks((chunks) => {
+                const newChunks = [...chunks];
+                newChunks[i] = chunk;
+                return newChunks;
+              });
+            });
+          }
+        }
+        return newStatus;
+      });
     }, 1000); // milliseconds
     return () => {
       clearInterval(interval);
@@ -56,6 +80,11 @@ const Session = (props: { session: string; youtube: string }) => {
         <a href={url}>{url}</a>
       </p>
       <p>{JSON.stringify(status)}</p>
+      <ul>
+        {chunks.flat().map((line, i) => (
+          <li key={i}>{line}</li>
+        ))}
+      </ul>
     </>
   );
 };
