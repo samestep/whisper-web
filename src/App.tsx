@@ -73,7 +73,7 @@ const App = () => {
   return (
     <>
       <h1>
-        <a href="/">{title}</a>
+        <a href="/whisper-web/">{title}</a>
       </h1>
       <p>
         <a href={github}>{github}</a>
