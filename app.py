@@ -111,6 +111,17 @@ def handler(event: Event, context: Context) -> Response:
     last_put = time.monotonic()
     chunks = 0
 
+    def put_chunk(now: float) -> None:
+        nonlocal segments
+        nonlocal last_put
+        nonlocal chunks
+        s3.Object("whisper-web", f"{prefix}{chunks}.json").put(
+            Body=json.dumps(segments)
+        )
+        segments = []
+        last_put = now
+        chunks += 1
+
     class Interceptor:
         def write(self, s: Any) -> Any:
             nonlocal segments
@@ -121,12 +132,7 @@ def handler(event: Event, context: Context) -> Response:
                 segments.append(s)
                 now = time.monotonic()
                 if now - last_put > 0.5:  # seconds
-                    s3.Object("whisper-web", f"{prefix}{chunks}.json").put(
-                        Body=json.dumps(segments)
-                    )
-                    segments = []
-                    last_put = now
-                    chunks += 1
+                    put_chunk(now)
                     put({"status": "transcribing", "chunks": chunks})
 
     with tempfile.TemporaryDirectory() as tmpdirname:
@@ -146,6 +152,7 @@ def handler(event: Event, context: Context) -> Response:
         with contextlib.redirect_stdout(interceptor):
             result = model.transcribe(filename, verbose=True)
 
+    put_chunk(time.monotonic())
     put({"status": "finished", "chunks": chunks})
 
     return {"result": result}
