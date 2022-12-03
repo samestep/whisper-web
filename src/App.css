@@ -5,3 +5,16 @@
 .invalid {
   color: red;
 }
+
+.results {
+  border-spacing: 10px 0;
+  margin: 0 auto;
+}
+
+.timestamp {
+  text-align: right;
+}
+
+.transcription {
+  text-align: left;
+}

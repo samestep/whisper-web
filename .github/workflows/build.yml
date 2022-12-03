@@ -27,13 +27,6 @@ jobs:
       - uses: snok/install-poetry@v1
       - run: poetry install
       - run: poetry run ./check.sh
-      - uses: jwalton/gh-ecr-push@v1
-        with:
-          access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          region: us-east-2
-          image: whisper:latest
-          direction: pull
       - run: ./build.sh
       - uses: jwalton/gh-ecr-push@v1
         with:

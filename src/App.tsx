@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import "./App.css";
 
-const title = "Whisper Web";
+const title = "YouTube transcriber";
 const github = "https://github.com/samestep/whisper-web";
 
 interface Starting {
@@ -9,12 +9,12 @@ interface Starting {
 }
 
 interface Progress {
-  downloadedBytes: number;
-  totalBytes: number | null;
-  totalBytesEstimate: number | null;
+  downloadedBytes?: number;
+  totalBytes?: number | null;
+  totalBytesEstimate?: number | null;
   elapsed: number;
-  secondsRemaining: number | null;
-  bytesPerSecond: number | null;
+  secondsRemaining?: number | null;
+  bytesPerSecond?: number | null;
 }
 
 interface Downloading {
@@ -32,6 +32,60 @@ interface Meta {
 }
 
 type Status = Starting | (Meta & (Downloading | Transcribing));
+
+const Indicator = (props: { status: Status }) => {
+  switch (props.status.status) {
+    case "starting": {
+      return <p>starting...</p>;
+    }
+    case "downloading": {
+      const { downloadedBytes, totalBytes, secondsRemaining } =
+        props.status.progress;
+      const progress = [];
+      if (
+        downloadedBytes !== undefined &&
+        totalBytes !== undefined &&
+        totalBytes !== null
+      ) {
+        if (downloadedBytes === totalBytes)
+          return <p>downloaded! transcribing...</p>;
+        progress.push(
+          `${Math.round((downloadedBytes / totalBytes) * 100)}% done`
+        );
+      }
+      if (secondsRemaining !== undefined && secondsRemaining !== null)
+        progress.push(`${secondsRemaining} seconds remaining`);
+      return <p>downloading... {progress.join(", ")}</p>;
+    }
+    case "transcribing": {
+      return <p>transcribing...</p>;
+    }
+    case "finished": {
+      return <p>finished!</p>;
+    }
+  }
+};
+
+const Transcription = (props: { lines: string[] }) => (
+  <table className="results">
+    <tbody>
+      {props.lines.map((line, i) => {
+        const m = line.match(
+          /^\[(\d\d:\d\d\.\d\d\d) --> (\d\d:\d\d\.\d\d\d)\] (.*)$/
+        );
+        if (m) {
+          const [, start, end, text] = m;
+          return (
+            <tr key={i}>
+              <td className="timestamp">{`${start} ${end}`}</td>
+              <td className="transcription">{text}</td>
+            </tr>
+          );
+        }
+      })}
+    </tbody>
+  </table>
+);
 
 const numChunks = (status: Status) =>
   status.status === "transcribing" || status.status === "finished"
@@ -79,12 +133,8 @@ const Session = (props: { session: string; youtube: string }) => {
       <p>
         <a href={url}>{url}</a>
       </p>
-      <p>{JSON.stringify(status)}</p>
-      <ul>
-        {chunks.flat().map((line, i) => (
-          <li key={i}>{line}</li>
-        ))}
-      </ul>
+      <Indicator status={status} />
+      <Transcription lines={chunks.flat()} />
     </>
   );
 };

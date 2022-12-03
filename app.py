@@ -85,27 +85,29 @@ def handler(event: Event, context: Context) -> Response:
     elapsed = 0
     filename = None
 
-    def put_downloading(info: dict[str, Any]) -> None:
+    info: dict[str, Any] = {}
+
+    def put_downloading() -> None:
         put({"status": "downloading", "progress": info | {"elapsed": elapsed}})
 
-    put_downloading({})
+    put_downloading()
 
     def progress_hook(progress: dict[str, Any]) -> None:
         nonlocal elapsed
         nonlocal filename
+        nonlocal info
         filename = progress["filename"]
         new_elapsed = progress.get("elapsed")
+        info = {
+            "downloadedBytes": progress.get("downloaded_bytes"),
+            "totalBytes": progress.get("total_bytes"),
+            "totalBytesEstimate": progress.get("total_bytes_estimate"),
+            "secondsRemaining": progress.get("eta"),
+            "bytesPerSecond": progress.get("speed"),
+        }
         if new_elapsed is not None and new_elapsed - elapsed > 0.5:  # seconds
             elapsed = new_elapsed
-            put_downloading(
-                {
-                    "downloadedBytes": progress.get("downloaded_bytes"),
-                    "totalBytes": progress.get("total_bytes"),
-                    "totalBytesEstimate": progress.get("total_bytes_estimate"),
-                    "secondsRemaining": progress.get("eta"),
-                    "bytesPerSecond": progress.get("speed"),
-                }
-            )
+            put_downloading()
 
     segments: list[str] = []
     last_put = time.monotonic()
@@ -145,6 +147,8 @@ def handler(event: Event, context: Context) -> Response:
             }
         ) as ydl:
             ydl.download([id])
+
+        put_downloading()
 
         model = whisper.load_model("small", download_root="/tmp/.cache/whisper")
 
