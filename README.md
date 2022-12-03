@@ -1,4 +1,4 @@
-# whisper-web
+# YouTube transcriber
 
 My class project for the CMU [05-618 Human-AI
 Interaction](https://sites.google.com/andrew.cmu.edu/haii-cmu) class in Fall

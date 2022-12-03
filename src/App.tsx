@@ -153,10 +153,24 @@ const InvalidYoutube = (props: { value: string | null }) => (
   <Invalid name="YouTube ID" value={props.value} />
 );
 
+const InvalidYoutubeURL = (props: { value: string | null }) => (
+  <Invalid name="YouTube ID or URL" value={props.value} />
+);
+
 const isSessionValid = (session: string | null) =>
-  session?.match(/[0-9a-f]{16}/);
+  session?.match(/^[0-9a-f]{16}$/);
 const isYoutubeValid = (session: string | null) =>
-  session?.match(/[\-0-9A-Z_a-z]{11}/);
+  session?.match(/^[\-0-9A-Z_a-z]{11}$/);
+
+const parseYoutube = (youtube: string) => {
+  const m = youtube.match(/^https:\/\/youtu\.be\/([\-0-9A-Z_a-z]{11})$/);
+  if (m) return m[1];
+  try {
+    return new URL(youtube).searchParams.get("v");
+  } catch (e) {
+    return youtube;
+  }
+};
 
 const Homepage = (props: { transcribe: (youtube: string) => void }) => {
   const [attempt, setAttempt] = useState<string | undefined>(undefined);
@@ -172,14 +186,15 @@ const Homepage = (props: { transcribe: (youtube: string) => void }) => {
             const youtube = (
               document.getElementById("textbox") as HTMLInputElement
             ).value;
-            if (!isYoutubeValid(youtube)) setAttempt(youtube);
-            else props.transcribe(youtube);
+            const parsed = parseYoutube(youtube);
+            if (!isYoutubeValid(parsed)) setAttempt(youtube);
+            else props.transcribe(parsed!);
           }}
         >
           transcribe
         </button>
       </div>
-      {attempt !== undefined ? <InvalidYoutube value={attempt} /> : <></>}
+      {attempt !== undefined ? <InvalidYoutubeURL value={attempt} /> : <></>}
     </>
   );
 };
