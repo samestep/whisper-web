@@ -74,10 +74,10 @@ const Transcription = (props: { lines: string[] }) => (
           /^\[(\d\d:\d\d\.\d\d\d) --> (\d\d:\d\d\.\d\d\d)\] (.*)$/
         );
         if (m) {
-          const [, start, end, text] = m;
+          const [, start, , text] = m;
           return (
             <tr key={i}>
-              <td className="timestamp">{`${start} ${end}`}</td>
+              <td className="timestamp">{start}</td>
               <td className="transcription">{text}</td>
             </tr>
           );
