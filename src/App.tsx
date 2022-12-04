@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import "./App.css";
 
 const title = "YouTube transcriber";
+const base = "/whisper-web/";
 const github = "https://github.com/samestep/whisper-web";
 
 interface Starting {
@@ -131,13 +132,57 @@ const Session = (props: { session: string; youtube: string }) => {
   return (
     <>
       <p>
-        <a href={url}>{url}</a>
+        <a href={url} className="which">
+          [{url}]
+        </a>
       </p>
       <Indicator status={status} />
       <Transcription lines={chunks.flat()} />
     </>
   );
 };
+
+const About = () => (
+  <>
+    <h2>FAQ</h2>
+    <div className="about">
+      <h3>What is this?</h3>
+      <p>
+        Hi! This is a webapp that you can use to transcribe YouTube videos. The
+        links at the top let you navigate back to the homepage, on which you can
+        input a link to a YouTube video, then click the "transcribe" button.
+      </p>
+      <h3>Does my data go anywhere?</h3>
+      <p>
+        The transcription does not happen in your browser; rather, when you
+        click the "transcribe" button, your browser sends the YouTube video ID
+        you chose to an{" "}
+        <a href="https://aws.amazon.com/lambda/">AWS Lambda function</a>, which
+        then downloads the video, transcribes it, and streams its status and
+        transcription results to an{" "}
+        <a href="https://aws.amazon.com/s3/">AWS S3 bucket</a>. Your browser
+        then polls this S3 bucket and displays the results to you.
+      </p>
+      <h3>How long is the data kept?</h3>
+      <p>
+        The S3 bucket{" "}
+        <a href="https://docs.aws.amazon.com/AmazonS3/latest/userguide/lifecycle-expire-general-considerations.html">
+          expires
+        </a>{" "}
+        objects after one day; then S3 usually deletes those expired objects
+        within another day or so.
+      </p>
+      <h3>How does the transcription work?</h3>
+      <p>
+        All the source code for this webapp (both client and server) are
+        available <a href={github}>on GitHub</a>. The server uses{" "}
+        <a href="https://openai.com/blog/whisper/">OpenAI's Whisper model</a> to
+        do the heavy lifting. The model is available in several sizes, from
+        "tiny" to "large"; this particular webapp uses the "small" model.
+      </p>
+    </div>
+  </>
+);
 
 const Invalid = (props: { name: string; value: string | null }) => (
   <p className="invalid">
@@ -176,7 +221,7 @@ const Homepage = (props: { transcribe: (youtube: string) => void }) => {
   const [attempt, setAttempt] = useState<string | undefined>(undefined);
   return (
     <>
-      <p>Enter a YouTube video ID:</p>
+      <p>Enter a YouTube video ID or URL:</p>
       <div>
         <input id="textbox"></input>
       </div>
@@ -190,6 +235,7 @@ const Homepage = (props: { transcribe: (youtube: string) => void }) => {
             if (!isYoutubeValid(parsed)) setAttempt(youtube);
             else props.transcribe(parsed!);
           }}
+          className="transcribe"
         >
           transcribe
         </button>
@@ -201,6 +247,7 @@ const Homepage = (props: { transcribe: (youtube: string) => void }) => {
 
 const App = () => {
   const params = new URL(window.location.href).searchParams;
+  const [about] = useState(params.get("about"));
   const [session, setSession] = useState(params.get("session"));
   const [youtube, setYoutube] = useState(params.get("youtube"));
 
@@ -211,12 +258,15 @@ const App = () => {
   return (
     <>
       <h1>
-        <a href="/whisper-web/">{title}</a>
+        <a href={base}>{title}</a>
       </h1>
       <p>
-        <a href={github}>{github}</a>
+        <a href={github}>GitHub</a> | <a href={base}>home</a> |{" "}
+        <a href={`${base}?about`}>about</a>
       </p>
-      {session === null && youtube === null ? (
+      {about !== null ? (
+        <About />
+      ) : session === null && youtube === null ? (
         <Homepage
           transcribe={(newYoutube) => {
             const chars = [];

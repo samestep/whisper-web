@@ -1,13 +1,47 @@
+body {
+  background-color: whitesmoke;
+}
+
 #root {
+  font-family: sans-serif;
   text-align: center;
+}
+
+a {
+  text-decoration: none;
+  color: dodgerblue;
+}
+
+#textbox {
+  font-size: medium;
+  padding: 10px;
+  width: 250px;
+}
+
+.transcribe {
+  border-radius: 10px;
+  margin: 20px;
+  padding: 10px;
+  font-size: large;
 }
 
 .invalid {
   color: red;
 }
 
+.about {
+  margin: 0 auto;
+  max-width: 500px;
+  padding: 0 25px;
+  text-align: justify;
+}
+
+.which {
+  color: lightsteelblue;
+}
+
 .results {
-  border-spacing: 10px 0;
+  border-spacing: 10px 5px;
   margin: 0 auto;
 }
 
