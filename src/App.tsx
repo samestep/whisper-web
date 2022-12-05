@@ -178,7 +178,7 @@ const About = () => (
         available <a href={github}>on GitHub</a>. The server uses{" "}
         <a href="https://openai.com/blog/whisper/">OpenAI's Whisper model</a> to
         do the heavy lifting. The model is available in several sizes, from
-        "tiny" to "large"; this particular webapp uses the "small" model.
+        "tiny" to "large"; this particular webapp uses the "medium" model.
       </p>
     </div>
   </>

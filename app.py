@@ -150,7 +150,7 @@ def handler(event: Event, context: Context) -> Response:
 
         put_downloading()
 
-        model = whisper.load_model("small", download_root="/tmp/.cache/whisper")
+        model = whisper.load_model("medium", download_root="/tmp/.cache/whisper")
 
         interceptor: Any = Interceptor()
         with contextlib.redirect_stdout(interceptor):
