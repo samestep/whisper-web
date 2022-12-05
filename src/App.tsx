@@ -193,7 +193,7 @@ const About = () => (
         do the heavy lifting. The model is available in several sizes, from
         "tiny" to "large"; this particular webapp uses the "medium" model.
       </p>
-      <h3>What limitations does this app have?</h3>
+      <h3>What limitations does this have?</h3>
       <p>
         AWS Lambda has a hard time limit of 15 minutes, so if the combination of
         downloading and transcribing a YouTube video takes longer than that
