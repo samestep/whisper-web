@@ -113,7 +113,7 @@ const Session = (props: { session: string; youtube: string }) => {
             ).then(async (response) => {
               const chunk = await response.json();
               setChunks((chunks) => {
-                const newChunks = [...chunks];
+                const newChunks = chunks.slice();
                 newChunks[i] = chunk;
                 return newChunks;
               });
