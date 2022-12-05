@@ -40,6 +40,12 @@ a {
   color: lightsteelblue;
 }
 
+.clipboard {
+  border-radius: 5px;
+  margin: 0 0 10px;
+  padding: 5px;
+}
+
 .results {
   border-spacing: 10px 5px;
   margin: 0 auto;

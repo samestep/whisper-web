@@ -137,6 +137,18 @@ const Session = (props: { session: string; youtube: string }) => {
         </a>
       </p>
       <Indicator status={status} />
+      {status.status === "transcribing" || status.status === "finished" ? (
+        <button
+          onClick={() => {
+            navigator.clipboard.writeText(chunks.flat().join("\n"));
+          }}
+          className="clipboard"
+        >
+          copy transcript to clipboard
+        </button>
+      ) : (
+        []
+      )}
       <Transcription lines={chunks.flat()} />
     </>
   );
