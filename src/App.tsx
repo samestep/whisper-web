@@ -129,6 +129,7 @@ const Session = (props: { session: string; youtube: string }) => {
   }, [props.session, props.youtube, status.status === "finished"]);
 
   const url = `https://youtu.be/${props.youtube}`;
+  const lines = chunks.flat();
   return (
     <>
       <p>
@@ -140,7 +141,7 @@ const Session = (props: { session: string; youtube: string }) => {
       {status.status === "transcribing" || status.status === "finished" ? (
         <button
           onClick={() => {
-            navigator.clipboard.writeText(chunks.flat().join("\n"));
+            navigator.clipboard.writeText(lines.join("\n"));
           }}
           className="clipboard"
         >
@@ -149,7 +150,7 @@ const Session = (props: { session: string; youtube: string }) => {
       ) : (
         []
       )}
-      <Transcription lines={chunks.flat()} />
+      <Transcription lines={lines} />
     </>
   );
 };
