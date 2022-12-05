@@ -1,4 +1,4 @@
-# YouTube transcriber
+# [YouTube transcriber](https://samestep.github.io/whisper-web/)
 
 My class project for the CMU [05-618 Human-AI
 Interaction](https://sites.google.com/andrew.cmu.edu/haii-cmu) class in Fall
