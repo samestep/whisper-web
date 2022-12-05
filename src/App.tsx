@@ -165,7 +165,7 @@ const About = () => (
         links at the top let you navigate back to the homepage, on which you can
         input a link to a YouTube video, then click the "transcribe" button.
       </p>
-      <h3>Does my data go anywhere?</h3>
+      <h3>Where does the data go?</h3>
       <p>
         The transcription does not happen in your browser; rather, when you
         click the "transcribe" button, your browser sends the YouTube video ID
@@ -192,6 +192,14 @@ const About = () => (
         <a href="https://openai.com/blog/whisper/">OpenAI's Whisper model</a> to
         do the heavy lifting. The model is available in several sizes, from
         "tiny" to "large"; this particular webapp uses the "medium" model.
+      </p>
+      <h3>What limitations does this app have?</h3>
+      <p>
+        AWS Lambda has a hard time limit of 15 minutes, so if the combination of
+        downloading and transcribing a YouTube video takes longer than that
+        time, it will simply terminate and stop pushing updates to the S3
+        bucket. Currently the client has no mechanism to detecting this, so in
+        this scenario it would just look like the transcription has frozen.
       </p>
     </div>
   </>
