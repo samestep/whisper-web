@@ -7,6 +7,9 @@ model. Originally this was meant to be something much cooler (specifically, the
 entirety of Whisper packaged into WebAssembly), but that turned out to be too
 hard for me to do, so here we are.
 
+**UPDATE:** I found out that somebody else already did exactly what I was
+originally trying to do! You can find it here: https://whisper.ggerganov.com/
+
 ## Contributing
 
 See [`CONTRIBUTING.md`](CONTRIBUTING.md).

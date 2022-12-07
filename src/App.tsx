@@ -195,11 +195,25 @@ const About = () => (
       </p>
       <h3>What limitations does this have?</h3>
       <p>
-        AWS Lambda has a hard time limit of 15 minutes, so if the combination of
-        downloading and transcribing a YouTube video takes longer than that
-        time, it will simply terminate and stop pushing updates to the S3
-        bucket. Currently the client has no mechanism to detecting this, so in
-        this scenario it would just look like the transcription has frozen.
+        AWS Lambda has a{" "}
+        <a href="https://docs.aws.amazon.com/lambda/latest/dg/gettingstarted-limits.html#function-configuration-deployment-and-execution">
+          hard time limit of 15 minutes
+        </a>
+        , so if the combination of downloading and transcribing a YouTube video
+        takes longer than that time, it will simply terminate and stop pushing
+        updates to the S3 bucket. Currently the client has no mechanism to
+        detecting this, so in this scenario it would just look like the
+        transcription has frozen.
+      </p>
+      <h3>What good alternatives exist?</h3>
+      <p>
+        The original goal for this project was to package the entirety of
+        Whisper into <a href="https://webassembly.org/">WebAssembly</a> to run
+        in the browser, rather than sending data to a server for transcription.
+        It turns out that such a project already exists; you can find it{" "}
+        <a href="https://whisper.ggerganov.com/">here</a>. That project does not
+        suffer from the 15-minute time limit this one has, but it can only go up
+        to the "base" size model instead of the "medium" size this one uses.
       </p>
     </div>
   </>
